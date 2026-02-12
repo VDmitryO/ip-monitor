@@ -1,0 +1,48 @@
+# Environment variables
+.env
+.env.local
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# RVM / rbenv
+.ruby-version
+.ruby-gemset
+.rvmrc
+
+# Bundler
+/.bundle/
+/vendor/bundle
+Gemfile.lock
+
+# RSpec
+spec/examples.txt
+
+# Logs
+*.log
+log/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Database
+*.sqlite3
+*.db
+
+# Pry
+.pry_history

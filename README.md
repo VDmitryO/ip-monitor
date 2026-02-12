@@ -1,0 +1,220 @@
+# IP Monitor API
+
+A RESTful API built with Grape, Sequel, and PostgreSQL.
+
+## Tech Stack
+
+- **Framework**: [Grape](https://github.com/ruby-grape/grape) - REST API framework
+- **ORM**: [Sequel](https://sequel.jeremyevans.net/) - Database toolkit
+- **Database**: PostgreSQL
+- **Server**: Puma
+- **Testing**: RSpec + Rack::Test
+
+## Prerequisites
+
+- Ruby 3.3.0
+- PostgreSQL
+- Bundler
+
+## Setup
+
+1. **Install dependencies**:
+   ```bash
+   bundle install
+   ```
+
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and set your database URL:
+   ```
+   DATABASE_URL=postgres://localhost/ip_monitor_development
+   ```
+
+3. **Create database**:
+   ```bash
+   bundle exec rake db:create
+   ```
+
+4. **Run migrations**:
+   ```bash
+   bundle exec rake db:migrate
+   ```
+
+## Running the Application
+
+### Development Server
+
+```bash
+bundle exec rake server
+# or
+bundle exec puma config.ru -p 9292
+```
+
+The API will be available at `http://localhost:9292`
+
+### With Auto-reload
+
+```bash
+bundle exec rerun 'rackup config.ru -p 9292'
+```
+
+## API Endpoints
+
+### Health Check
+```bash
+GET /health
+```
+
+### API Info
+```bash
+GET /api/v1/
+```
+
+## Database Tasks
+
+### Create a new migration
+```bash
+bundle exec rake db:create_migration[create_users]
+```
+
+### Run migrations
+```bash
+bundle exec rake db:migrate
+```
+
+### Rollback last migration
+```bash
+bundle exec rake db:rollback
+```
+
+### Check current schema version
+```bash
+bundle exec rake db:version
+```
+
+### Reset database (drop all tables)
+```bash
+bundle exec rake db:reset
+```
+
+## Console
+
+Open an interactive console with database connection:
+
+```bash
+bundle exec rake console
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+bundle exec rspec
+```
+
+Run specific test file:
+
+```bash
+bundle exec rspec spec/api/v1/users_spec.rb
+```
+
+## Project Structure
+
+```
+.
+├── app/
+│   ├── api/
+│   │   ├── base.rb           # Main API class
+│   │   └── v1/
+│   │       └── root.rb       # V1 API endpoints
+│   └── models/               # Sequel models
+├── config/
+│   └── database.rb           # Database configuration
+├── db/
+│   └── migrations/           # Database migrations
+├── spec/
+│   └── spec_helper.rb        # RSpec configuration
+├── config.ru                 # Rack configuration
+├── Gemfile                   # Dependencies
+├── Rakefile                  # Rake tasks
+└── README.md
+```
+
+## Adding New Endpoints
+
+1. Create a new file in `app/api/v1/` (e.g., `users.rb`)
+2. Define your endpoints using Grape DSL
+3. Mount it in `app/api/v1/root.rb`
+
+Example:
+
+```ruby
+# app/api/v1/users.rb
+module App
+  module API
+    module V1
+      class Users < Grape::API
+        namespace :users do
+          desc 'Get all users'
+          get do
+            DB[:users].all
+          end
+        end
+      end
+    end
+  end
+end
+
+# Mount in app/api/v1/root.rb
+mount Users
+```
+
+## Creating Models
+
+Create Sequel models in `app/models/`:
+
+```ruby
+# app/models/user.rb
+class User < Sequel::Model
+  plugin :validation_helpers
+  plugin :timestamps, update_on_create: true
+
+  def validate
+    super
+    validates_presence [:name, :email]
+    validates_unique :email
+  end
+end
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `RACK_ENV` | Environment (development/test/production) | `development` |
+| `PORT` | Server port | `9292` |
+| `DB_MAX_CONNECTIONS` | Database connection pool size | `10` |
+
+## Error Handling
+
+The API includes global error handlers for:
+
+- Validation errors (400)
+- Not found errors (404)
+- Database validation errors (422)
+- Internal server errors (500)
+
+In development mode, detailed error information including backtraces is returned.
+
+## CORS
+
+CORS is enabled for all origins by default. Configure in [`config.ru`](config.ru:4) if needed.
+
+## License
+
+MIT
