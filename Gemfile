@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.3.0'
+ruby '3.4.7'
 
 # API Framework
 gem 'grape', '~> 2.0'
@@ -25,7 +25,6 @@ group :development, :test do
   gem 'rspec', '~> 3.13'
   gem 'rack-test', '~> 2.1'
   gem 'pry', '~> 0.14'
-  gem 'rubocop', '~> 1.60', require: false
 end
 
 group :development do

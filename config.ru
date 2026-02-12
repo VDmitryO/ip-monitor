@@ -1,6 +1,7 @@
 require 'dotenv/load'
 require 'rack/cors'
 require_relative 'config/database'
+require_relative 'app/models/ip'
 require_relative 'app/api/base'
 
 use Rack::Cors do

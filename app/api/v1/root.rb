@@ -1,4 +1,5 @@
 require 'grape'
+require_relative 'ips'
 
 module App
   module API
@@ -16,10 +17,17 @@ module App
             version: 'v1',
             endpoints: [
               { method: 'GET', path: '/api/v1/', description: 'API information' },
-              { method: 'GET', path: '/health', description: 'Health check' }
+              { method: 'GET', path: '/health', description: 'Health check' },
+              { method: 'POST', path: '/api/v1/ips', description: 'Create IP address' },
+              { method: 'POST', path: '/api/v1/ips/:id/enable', description: 'Enable IP monitoring' },
+              { method: 'POST', path: '/api/v1/ips/:id/disable', description: 'Disable IP monitoring' },
+              { method: 'DELETE', path: '/api/v1/ips/:id', description: 'Delete IP address' }
             ]
           }
         end
+
+        # Mount resource endpoints
+        mount App::API::V1::Ips
 
         # Add your resource endpoints here
         # Example:
