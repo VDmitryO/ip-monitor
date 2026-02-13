@@ -26,7 +26,7 @@ module App
       DB.transaction do
         rows = DB[:ips]
           .where(enabled: true)
-          .where { next_check_at <= Sequel::CURRENT_TIMESTAMP }
+          .where { next_check_at <= Time.now.utc }
           .order(:next_check_at)
           .limit(BATCH_SIZE)
           .for_update
@@ -38,7 +38,7 @@ module App
         ids = rows.map { |r| r[:id] }
         DB[:ips]
           .where(id: ids)
-          .update(next_check_at: Sequel.lit("NOW() + interval '#{CHECK_INTERVAL} seconds'"))
+          .update(next_check_at: Time.now.utc + CHECK_INTERVAL)
 
         rows
       end

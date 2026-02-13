@@ -28,7 +28,7 @@ module App
     def before_create
       super
       # Set next_check_at to now so the IP gets picked up immediately by workers
-      self.next_check_at ||= Time.now
+      self.next_check_at ||= Time.now.utc
     end
 
     def before_save
