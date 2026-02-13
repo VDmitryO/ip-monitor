@@ -39,5 +39,21 @@ services:
     entrypoint: ["./docker-test-entrypoint.sh"]
     command: ["bundle", "exec", "rspec"]
 
+  ping-worker:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/ip_monitor
+      RACK_ENV: development
+      DB_MAX_CONNECTIONS: 10
+      PING_BATCH_SIZE: 10
+      PING_CHECK_INTERVAL: 60
+      PING_POLL_INTERVAL: 5
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["bundle", "exec", "rake", "ping_worker"]
+    deploy:
+      replicas: 1
+
 volumes:
   pgdata:

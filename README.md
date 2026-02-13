@@ -149,14 +149,21 @@ bundle exec rspec
 │   ├── api/
 │   │   ├── base.rb           # Main API class
 │   │   └── v1/
-│   │       └── root.rb       # V1 API endpoints
-│   └── models/               # Sequel models
+│   │       ├── root.rb       # V1 API endpoints
+│   │       └── ips.rb        # IP management endpoints
+│   ├── models/               # Sequel models
+│   │   ├── ip.rb             # IP model
+│   │   └── ping_check.rb     # Ping check result model
+│   └── workers/
+│       └── ping_worker.rb    # Background ping worker
 ├── config/
 │   └── database.rb           # Database configuration
 ├── db/
 │   └── migrations/           # Database migrations
 ├── spec/
-│   └── spec_helper.rb        # RSpec configuration
+│   ├── spec_helper.rb        # RSpec configuration
+│   ├── factories/            # FactoryBot factories
+│   └── requests/             # Request specs
 ├── config.ru                 # Rack configuration
 ├── Gemfile                   # Dependencies
 ├── Rakefile                  # Rake tasks
@@ -210,6 +217,55 @@ class User < Sequel::Model
 end
 ```
 
+## Ping Worker
+
+The application includes a background worker that continuously monitors IP addresses by pinging them at regular intervals.
+
+### How It Works
+
+1. **Batch Processing**: The worker selects a batch of IPs that are due for checking (based on `next_check_at`)
+2. **Parallel Workers**: Multiple worker instances can run in parallel using PostgreSQL's `FOR UPDATE SKIP LOCKED` to prevent conflicts
+3. **Timeout Enforcement**: Each ping has a 1-second timeout (hard requirement)
+4. **Result Recording**: All ping results are saved to the `ping_checks` table
+
+### Running the Worker
+
+The worker is automatically started with Docker Compose:
+
+```bash
+docker compose up
+```
+
+To scale workers (run multiple instances in parallel):
+
+```bash
+docker compose up --scale ping-worker=3
+```
+
+To run the worker manually:
+
+```bash
+bundle exec rake ping_worker
+```
+
+### Configuration
+
+Configure the worker via environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PING_BATCH_SIZE` | Number of IPs to process per batch | `10` |
+| `PING_CHECK_INTERVAL` | Seconds between checks for each IP | `60` |
+| `PING_POLL_INTERVAL` | Seconds to sleep when no IPs are due | `5` |
+
+### Architecture
+
+- Each IP has a `next_check_at` timestamp
+- Workers continuously poll for IPs where `next_check_at <= NOW()`
+- When an IP is claimed, its `next_check_at` is advanced by `PING_CHECK_INTERVAL`
+- Multiple workers can run safely in parallel using database-level locking
+- If a worker crashes, uncompleted IPs will be picked up by another worker
+
 ## Environment Variables
 
 | Variable | Description | Default |
@@ -218,6 +274,9 @@ end
 | `RACK_ENV` | Environment (development/test/production) | `development` |
 | `PORT` | Server port | `9292` |
 | `DB_MAX_CONNECTIONS` | Database connection pool size | `10` |
+| `PING_BATCH_SIZE` | Worker: IPs per batch | `10` |
+| `PING_CHECK_INTERVAL` | Worker: seconds between checks | `60` |
+| `PING_POLL_INTERVAL` | Worker: poll interval when idle | `5` |
 
 ## Error Handling
 

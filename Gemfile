@@ -24,6 +24,9 @@ gem 'oj', '~> 3.16'
 # Task runner
 gem 'rake', '~> 13.0'
 
+# Ping
+gem 'net-ping', '~> 2.0'
+
 group :development, :test do
   gem 'rspec', '~> 3.13'
   gem 'rack-test', '~> 2.1'

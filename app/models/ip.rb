@@ -25,6 +25,12 @@ module App
       validates_unique [:address]
     end
 
+    def before_create
+      super
+      # Set next_check_at to now so the IP gets picked up immediately by workers
+      self.next_check_at ||= Time.now
+    end
+
     def before_save
       super
       # Normalize IP address (e.g., 2001:0db8:... becomes 2001:db8:...)

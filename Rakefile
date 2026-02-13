@@ -148,3 +148,16 @@ task :console do
   
   Pry.start
 end
+
+desc 'Run the ping check worker'
+task :ping_worker do
+  require_relative 'config/database'
+  
+  # Load all models
+  Dir['./app/models/**/*.rb'].each { |f| require f }
+  
+  # Load worker
+  require_relative 'app/workers/ping_worker'
+  
+  App::PingWorker.new.run
+end
