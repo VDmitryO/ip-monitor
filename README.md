@@ -12,53 +12,41 @@ A RESTful API built with Grape, Sequel, and PostgreSQL.
 
 ## Prerequisites
 
-- Ruby 3.3.0
-- PostgreSQL
-- Bundler
+- Docker
+- Docker Compose
 
-## Setup
+## Setup & Running
 
-1. **Install dependencies**:
-   ```bash
-   bundle install
-   ```
-
-2. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and set your database URL:
-   ```
-   DATABASE_URL=postgres://localhost/ip_monitor_development
-   ```
-
-3. **Create database**:
-   ```bash
-   bundle exec rake db:create
-   ```
-
-4. **Run migrations**:
-   ```bash
-   bundle exec rake db:migrate
-   ```
-
-## Running the Application
-
-### Development Server
+Run the application with Docker Compose:
 
 ```bash
-bundle exec rake server
-# or
-bundle exec puma config.ru -p 9292
+docker compose up --build
 ```
+
+That's it! The application will:
+- Start PostgreSQL database
+- Run migrations automatically
+- Start the API server
 
 The API will be available at `http://localhost:9292`
 
-### With Auto-reload
+### Useful Docker Commands
 
 ```bash
-bundle exec rerun 'rackup config.ru -p 9292'
+# Start in background
+docker compose up -d
+
+# View logs
+docker compose logs -f app
+
+# Stop containers
+docker compose down
+
+# Stop and remove database volume
+docker compose down -v
+
+# Open console
+docker compose exec app bundle exec rake console
 ```
 
 ## API Endpoints
