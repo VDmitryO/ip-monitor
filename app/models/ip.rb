@@ -8,16 +8,19 @@ module App
     def validate
       super
       validates_presence [:address]
-      validates_unique [:address]
       
-      # Validate IP address format
+      # Validate IP address format BEFORE validates_unique
+      # to prevent PostgreSQL inet type errors
       if address && !address.is_a?(Sequel::SQL::Blob)
         begin
           IPAddr.new(address.to_s)
         rescue IPAddr::InvalidAddressError
           errors.add(:address, 'is not a valid IP address')
+          return  # Don't check uniqueness if format is invalid
         end
       end
+      
+      validates_unique [:address]
     end
 
     def before_save

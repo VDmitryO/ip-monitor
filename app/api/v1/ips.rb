@@ -1,4 +1,5 @@
 require 'grape'
+require 'ipaddr'
 
 module App
   module API
@@ -15,6 +16,7 @@ module App
               address: params[:ip],
               enabled: params[:enabled]
             )
+            
             status 201
             ip.to_api_hash
           end
