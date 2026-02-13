@@ -11,8 +11,8 @@ RUN bundle install
 
 COPY . .
 
-# Make entrypoint script executable
-RUN chmod +x docker-entrypoint.sh
+# Make entrypoint scripts executable
+RUN chmod +x docker-entrypoint.sh docker-test-entrypoint.sh
 
 EXPOSE 9292
 

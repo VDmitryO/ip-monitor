@@ -27,5 +27,17 @@ services:
       db:
         condition: service_healthy
 
+  test:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/ip_monitor_test
+      RACK_ENV: test
+      DB_MAX_CONNECTIONS: 10
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["./docker-test-entrypoint.sh"]
+    command: ["bundle", "exec", "rspec"]
+
 volumes:
   pgdata:

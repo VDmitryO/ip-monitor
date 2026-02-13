@@ -1,12 +1,20 @@
 require 'rack/test'
 require 'rspec'
 require 'dotenv/load'
+require 'factory_bot'
 
 ENV['RACK_ENV'] = 'test'
 ENV['DATABASE_URL'] ||= 'postgres://localhost/ip_monitor_test'
 
 require_relative '../config/database'
+
+# Load all models
+Dir[File.join(__dir__, '../app/models/**/*.rb')].each { |f| require f }
+
 require_relative '../app/api/base'
+
+# Load factories
+FactoryBot.find_definitions
 
 module RSpecMixin
   include Rack::Test::Methods
@@ -18,6 +26,7 @@ end
 
 RSpec.configure do |config|
   config.include RSpecMixin
+  config.include FactoryBot::Syntax::Methods
 
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

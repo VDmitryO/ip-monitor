@@ -98,16 +98,47 @@ bundle exec rake console
 
 ## Testing
 
-Run the test suite:
+### Running Tests with Docker Compose (Recommended)
+
+Run the full test suite with Docker Compose:
 
 ```bash
-bundle exec rspec
+docker compose run --rm test
 ```
+
+This will:
+- Create the test database (`ip_monitor_test`)
+- Run migrations
+- Execute all RSpec tests
+- Clean up after completion
 
 Run specific test file:
 
 ```bash
-bundle exec rspec spec/api/v1/users_spec.rb
+docker compose run --rm test bundle exec rspec spec/requests/v1/ips_spec.rb
+```
+
+Run tests with specific options:
+
+```bash
+# Run with documentation format
+docker compose run --rm test bundle exec rspec --format documentation
+
+# Run only failed tests
+docker compose run --rm test bundle exec rspec --only-failures
+```
+
+### Running Tests Locally
+
+If you have Ruby and PostgreSQL installed locally:
+
+```bash
+# Set up test database
+RACK_ENV=test bundle exec rake db:create
+RACK_ENV=test bundle exec rake db:migrate
+
+# Run tests
+bundle exec rspec
 ```
 
 ## Project Structure

@@ -1,9 +1,6 @@
 .git
 .gitignore
 .env
-README.md
-spec/
-.rspec
 tmp/
 log/
 *.log

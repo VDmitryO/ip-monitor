@@ -10,7 +10,17 @@ namespace :db do
     version = args[:version].to_i if args[:version]
     
     Sequel::Migrator.run(DB, 'db/migrations', target: version)
-    puts "Migration completed. Current schema version: #{DB[:schema_info].first[:version]}"
+    
+    # Check which migration table exists
+    if DB.table_exists?(:schema_info)
+      current_version = DB[:schema_info].first[:version]
+    elsif DB.table_exists?(:schema_migrations)
+      current_version = DB[:schema_migrations].order(:filename).last[:filename]
+    else
+      current_version = 'none'
+    end
+    
+    puts "Migration completed. Current schema version: #{current_version}"
   end
 
   desc 'Rollback database to previous version'
@@ -68,6 +78,9 @@ namespace :db do
     
     if DB.table_exists?(:schema_info)
       version = DB[:schema_info].first[:version]
+      puts "Current schema version: #{version}"
+    elsif DB.table_exists?(:schema_migrations)
+      version = DB[:schema_migrations].order(:filename).last[:filename]
       puts "Current schema version: #{version}"
     else
       puts "No migrations have been run yet"

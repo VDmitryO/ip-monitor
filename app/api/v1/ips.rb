@@ -12,10 +12,11 @@ module App
           end
           post do
             ip = App::Ip.create(
-              address: Sequel.lit("?::inet", params[:ip]),
+              address: params[:ip],
               enabled: params[:enabled]
             )
-            present ip
+            status 201
+            ip.to_api_hash
           end
 
           route_param :id, type: Integer do
@@ -23,20 +24,21 @@ module App
             post :enable do
               ip = App::Ip.with_pk!(params[:id])
               ip.update(enabled: true)
-              present ip
+              status 201
+              ip.to_api_hash
             end
 
             desc 'Disable stats collection for IP'
             post :disable do
               ip = App::Ip.with_pk!(params[:id])
               ip.update(enabled: false)
-              present ip
+              status 201
+              ip.to_api_hash
             end
 
             desc 'Delete an IP address'
             delete do
               ip = App::Ip.with_pk!(params[:id])
-              ip.update(enabled: false)
               ip.destroy
               status 204
             end
