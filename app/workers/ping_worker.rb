@@ -62,7 +62,7 @@ module App
         response_time_ms: response_time_ms,
         error_message: error_message
       )
-      puts "[PingWorker] #{address}: success: #{success}, response_time_ms: #{response_time_ms}, error_message: #{status}"
+      puts "[PingWorker] #{address}: success: #{success}, response_time_ms: #{response_time_ms}, error_message: #{error_message}"
     rescue => e
       puts "[PingWorker] Error pinging #{address}: #{e.message}"
 
