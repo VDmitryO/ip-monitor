@@ -5,6 +5,8 @@ module App
     plugin :timestamps, update_on_create: true
     plugin :validation_helpers
 
+    one_to_many :ping_checks
+
     def validate
       super
       validates_presence [:address]
@@ -41,6 +43,7 @@ module App
         id: id,
         address: address.to_s,
         enabled: enabled,
+        next_check_at: next_check_at&.iso8601,
         created_at: created_at.iso8601,
         updated_at: updated_at.iso8601
       }
