@@ -38,6 +38,22 @@ module App
               ip.to_api_hash
             end
 
+            desc 'Get stats for an IP address'
+            params do
+              requires :time_from, type: DateTime, desc: 'Start of time range'
+              requires :time_to,   type: DateTime, desc: 'End of time range'
+            end
+            get :stats do
+              ip = App::Ip.with_pk!(params[:id])
+              result = App::Ips::StatsOperation.call(ip, params[:time_from], params[:time_to])
+
+              if result[:success]
+                result[:data]
+              else
+                error!({ error: result[:message] }, 422)
+              end
+            end
+
             desc 'Delete an IP address'
             delete do
               ip = App::Ip.with_pk!(params[:id])
