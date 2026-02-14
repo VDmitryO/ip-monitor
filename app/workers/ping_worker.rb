@@ -1,4 +1,5 @@
 require_relative '../operations/ips/ping_operation'
+require_relative '../utils/logger'
 
 module App
   class PingWorker
@@ -7,12 +8,15 @@ module App
     POLL_INTERVAL  = ENV.fetch('PING_POLL_INTERVAL', 5).to_i    # seconds to sleep when no IPs are due
 
     def run
-      puts "[PingWorker] Starting with BATCH_SIZE=#{BATCH_SIZE}, CHECK_INTERVAL=#{CHECK_INTERVAL}s, POLL_INTERVAL=#{POLL_INTERVAL}s"
+      App::Logger.info "Starting PingWorker", 
+        batch_size: BATCH_SIZE, 
+        check_interval: CHECK_INTERVAL, 
+        poll_interval: POLL_INTERVAL
       
       loop do
         ips = claim_batch
         if ips.any?
-          puts "[PingWorker] Processing batch of #{ips.size} IPs"
+          App::Logger.info "Processing batch", batch_size: ips.size
           ips.each { |ip| App::Ips::PingOperation.call(ip) }
         else
           sleep POLL_INTERVAL

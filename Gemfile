@@ -5,6 +5,7 @@ ruby '3.4.7'
 # API Framework
 gem 'grape', '~> 2.0'
 gem 'grape-entity', '~> 1.0'
+gem 'grape_logging', '~> 3.0'
 
 # Database
 gem 'sequel', '~> 5.77'
@@ -26,6 +27,9 @@ gem 'rake', '~> 13.0'
 
 # Ping
 gem 'net-ping', '~> 2.0'
+
+# Logging
+gem 'semantic_logger', '~> 4.15'
 
 group :development, :test do
   gem 'rspec', '~> 3.13'

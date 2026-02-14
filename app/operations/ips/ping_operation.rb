@@ -1,4 +1,5 @@
 require 'net/ping'
+require_relative '../../utils/logger'
 
 module App
   module Ips
@@ -9,7 +10,7 @@ module App
 
       def call(ip)
         address = ip[:address].to_s
-        puts "[PingOperation] Pinging #{address} (id=#{ip[:id]})"
+        App::Logger.debug "Pinging address", address: address, ip_id: ip[:id]
 
         pinger = Net::Ping::External.new(address, nil, PING_TIMEOUT)
 
@@ -17,7 +18,11 @@ module App
         response_time_ms = success && pinger.duration ? (pinger.duration * 1000).round(2) : nil
         error_message = success ? nil : (pinger.exception || 'ping failed')
 
-        puts "[PingOperation] #{address}: success=#{success}, response_time_ms=#{response_time_ms}, error_message=#{error_message}"
+        App::Logger.info "Ping completed",
+          address: address,
+          success: success,
+          response_time_ms: response_time_ms,
+          error_message: error_message
 
         App::PingCheck.create(
           ip_id: ip[:id],
@@ -27,7 +32,10 @@ module App
           error_message: error_message
         )
       rescue => e
-        puts "[PingOperation] Error pinging #{address}: #{e.message}"
+        App::Logger.error "Ping failed",
+          address: address,
+          error: e.message,
+          backtrace: e.backtrace&.first(5)
 
         App::PingCheck.create(
           ip_id: ip[:id],
