@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 RSpec.describe 'API V1 IPs', type: :request do
-  describe 'POST /api/v1/ips' do
+  describe 'POST /ips' do
     let(:request_params) { { ip: '192.168.1.1' } }
 
-    subject { post '/api/v1/ips', request_params }
+    subject { post '/ips', request_params }
 
     context 'with valid IPv4 address' do
       it 'creates a new IP address' do
@@ -88,7 +88,7 @@ RSpec.describe 'API V1 IPs', type: :request do
       let(:request_params) { { ip: '192.168.1.100' } }
 
       it 'returns validation error' do
-        post '/api/v1/ips', request_params
+        post '/ips', request_params
         expect(last_response.status).to eq(201)
 
         subject
@@ -99,11 +99,11 @@ RSpec.describe 'API V1 IPs', type: :request do
     end
   end
 
-  describe 'POST /api/v1/ips/:id/enable' do
+  describe 'POST /ips/:id/enable' do
     let!(:ip) { create(:ip, :disabled) }
     let(:ip_id) { ip.id }
 
-    subject { post "/api/v1/ips/#{ip_id}/enable", {} }
+    subject { post "/ips/#{ip_id}/enable", {} }
 
     context 'with valid IP id' do
       it 'enables the IP address' do
@@ -148,11 +148,11 @@ RSpec.describe 'API V1 IPs', type: :request do
     end
   end
 
-  describe 'POST /api/v1/ips/:id/disable' do
+  describe 'POST /ips/:id/disable' do
     let!(:ip) { create(:ip) }
     let(:ip_id) { ip.id }
 
-    subject { post "/api/v1/ips/#{ip_id}/disable", {} }
+    subject { post "/ips/#{ip_id}/disable", {} }
 
     context 'with valid IP id' do
       it 'disables the IP address' do
@@ -197,11 +197,11 @@ RSpec.describe 'API V1 IPs', type: :request do
     end
   end
 
-  describe 'DELETE /api/v1/ips/:id' do
+  describe 'DELETE /ips/:id' do
     let!(:ip) { create(:ip) }
     let(:ip_id) { ip.id }
 
-    subject { delete "/api/v1/ips/#{ip_id}", {} }
+    subject { delete "/ips/#{ip_id}", {} }
 
     context 'with valid IP id' do
       it 'deletes the IP address' do
@@ -250,12 +250,12 @@ RSpec.describe 'API V1 IPs', type: :request do
     end
   end
 
-  describe 'GET /api/v1/ips/:id/stats' do
+  describe 'GET /ips/:id/stats' do
     let!(:ip) { create(:ip) }
     let(:ip_id) { ip.id }
     let(:request_params) { { time_from: (Time.now - 3600).iso8601, time_to: Time.now.iso8601 } }
 
-    subject { get "/api/v1/ips/#{ip_id}/stats", request_params }
+    subject { get "/ips/#{ip_id}/stats", request_params }
 
     context 'with valid IP id and ping checks' do
       before do

@@ -1,5 +1,6 @@
 require 'grape'
 require 'ipaddr'
+require_relative '../../operations/ips/stats_operation'
 
 module App
   module API

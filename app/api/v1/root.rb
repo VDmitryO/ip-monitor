@@ -5,9 +5,7 @@ module App
   module API
     module V1
       class Root < Grape::API
-        version 'v1', using: :path
         format :json
-        prefix :api
 
         # Example endpoint
         desc 'Returns API information'
@@ -16,12 +14,13 @@ module App
             api: 'IP Monitor API',
             version: 'v1',
             endpoints: [
-              { method: 'GET', path: '/api/v1/', description: 'API information' },
+              { method: 'GET', path: '/', description: 'API information' },
               { method: 'GET', path: '/health', description: 'Health check' },
-              { method: 'POST', path: '/api/v1/ips', description: 'Create IP address' },
-              { method: 'POST', path: '/api/v1/ips/:id/enable', description: 'Enable IP monitoring' },
-              { method: 'POST', path: '/api/v1/ips/:id/disable', description: 'Disable IP monitoring' },
-              { method: 'DELETE', path: '/api/v1/ips/:id', description: 'Delete IP address' }
+              { method: 'POST', path: '/ips', description: 'Create IP address' },
+              { method: 'GET', path: '/ips/:id/stats', description: 'Get IP statistics' },
+              { method: 'POST', path: '/ips/:id/enable', description: 'Enable IP monitoring' },
+              { method: 'POST', path: '/ips/:id/disable', description: 'Disable IP monitoring' },
+              { method: 'DELETE', path: '/ips/:id', description: 'Delete IP address' }
             ]
           }
         end
