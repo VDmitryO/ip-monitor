@@ -1,6 +1,15 @@
 # IP Monitor API
 
-A RESTful API built with Grape, Sequel, and PostgreSQL.
+A RESTful API service for monitoring IP addresses with automated ping checks and comprehensive statistics. Built with Grape, Sequel, and PostgreSQL, it provides real-time network monitoring capabilities with support for both IPv4 and IPv6 addresses.
+
+## Features
+
+- **IP Address Management**: Add, enable/disable, and delete IP addresses for monitoring
+- **Automated Ping Monitoring**: Background workers continuously ping registered IPs at configurable intervals
+- **Comprehensive Statistics**: Track RTT (round-trip time), packet loss, and statistical metrics (avg, min, max, median, stddev)
+- **Scalable Architecture**: Support for multiple parallel workers with PostgreSQL-based locking
+- **IPv4 & IPv6 Support**: Full support for both IP address formats
+- **RESTful API**: Clean, well-documented API endpoints for easy integration
 
 ## Tech Stack
 
