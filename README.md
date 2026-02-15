@@ -30,193 +30,6 @@ That's it! The application will:
 
 The API will be available at `http://localhost:9292`
 
-### Useful Docker Commands
-
-```bash
-# Start in background
-docker compose up -d
-
-# View logs
-docker compose logs -f app
-
-# Stop containers
-docker compose down
-
-# Stop and remove database volume
-docker compose down -v
-
-# Open console
-docker compose exec app bundle exec rake console
-```
-
-## API Endpoints
-
-### Health Check
-```bash
-GET /health
-```
-
-### API Info
-```bash
-GET /api/v1/
-```
-
-## Database Tasks
-
-### Create a new migration
-```bash
-bundle exec rake db:create_migration[create_users]
-```
-
-### Run migrations
-```bash
-bundle exec rake db:migrate
-```
-
-### Rollback last migration
-```bash
-bundle exec rake db:rollback
-```
-
-### Check current schema version
-```bash
-bundle exec rake db:version
-```
-
-### Reset database (drop all tables)
-```bash
-bundle exec rake db:reset
-```
-
-## Console
-
-Open an interactive console with database connection:
-
-```bash
-bundle exec rake console
-```
-
-## Testing
-
-### Running Tests with Docker Compose (Recommended)
-
-Run the full test suite with Docker Compose:
-
-```bash
-docker compose run --rm test
-```
-
-This will:
-- Create the test database (`ip_monitor_test`)
-- Run migrations
-- Execute all RSpec tests
-- Clean up after completion
-
-Run specific test file:
-
-```bash
-docker compose run --rm test bundle exec rspec spec/requests/v1/ips_spec.rb
-```
-
-Run tests with specific options:
-
-```bash
-# Run with documentation format
-docker compose run --rm test bundle exec rspec --format documentation
-
-# Run only failed tests
-docker compose run --rm test bundle exec rspec --only-failures
-```
-
-### Running Tests Locally
-
-If you have Ruby and PostgreSQL installed locally:
-
-```bash
-# Set up test database
-RACK_ENV=test bundle exec rake db:create
-RACK_ENV=test bundle exec rake db:migrate
-
-# Run tests
-bundle exec rspec
-```
-
-## Project Structure
-
-```
-.
-├── app/
-│   ├── api/
-│   │   ├── base.rb           # Main API class
-│   │   └── v1/
-│   │       ├── root.rb       # V1 API endpoints
-│   │       └── ips.rb        # IP management endpoints
-│   ├── models/               # Sequel models
-│   │   ├── ip.rb             # IP model
-│   │   └── ping_check.rb     # Ping check result model
-│   └── workers/
-│       └── ping_worker.rb    # Background ping worker
-├── config/
-│   └── database.rb           # Database configuration
-├── db/
-│   └── migrations/           # Database migrations
-├── spec/
-│   ├── spec_helper.rb        # RSpec configuration
-│   ├── factories/            # FactoryBot factories
-│   └── requests/             # Request specs
-├── config.ru                 # Rack configuration
-├── Gemfile                   # Dependencies
-├── Rakefile                  # Rake tasks
-└── README.md
-```
-
-## Adding New Endpoints
-
-1. Create a new file in `app/api/v1/` (e.g., `users.rb`)
-2. Define your endpoints using Grape DSL
-3. Mount it in `app/api/v1/root.rb`
-
-Example:
-
-```ruby
-# app/api/v1/users.rb
-module App
-  module API
-    module V1
-      class Users < Grape::API
-        namespace :users do
-          desc 'Get all users'
-          get do
-            DB[:users].all
-          end
-        end
-      end
-    end
-  end
-end
-
-# Mount in app/api/v1/root.rb
-mount Users
-```
-
-## Creating Models
-
-Create Sequel models in `app/models/`:
-
-```ruby
-# app/models/user.rb
-class User < Sequel::Model
-  plugin :validation_helpers
-  plugin :timestamps, update_on_create: true
-
-  def validate
-    super
-    validates_presence [:name, :email]
-    validates_unique :email
-  end
-end
-```
-
 ## Ping Worker
 
 The application includes a background worker that continuously monitors IP addresses by pinging them at regular intervals.
@@ -242,12 +55,6 @@ To scale workers (run multiple instances in parallel):
 docker compose up --scale ping-worker=3
 ```
 
-To run the worker manually:
-
-```bash
-bundle exec rake ping_worker
-```
-
 ### Configuration
 
 Configure the worker via environment variables:
@@ -258,40 +65,27 @@ Configure the worker via environment variables:
 | `PING_CHECK_INTERVAL` | Seconds between checks for each IP | `60` |
 | `PING_POLL_INTERVAL` | Seconds to sleep when no IPs are due | `5` |
 
-### Architecture
+## Testing
 
-- Each IP has a `next_check_at` timestamp
-- Workers continuously poll for IPs where `next_check_at <= NOW()`
-- When an IP is claimed, its `next_check_at` is advanced by `PING_CHECK_INTERVAL`
-- Multiple workers can run safely in parallel using database-level locking
-- If a worker crashes, uncompleted IPs will be picked up by another worker
+### Running Tests with Docker Compose (Recommended)
 
-## Environment Variables
+Run the full test suite with Docker Compose:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `RACK_ENV` | Environment (development/test/production) | `development` |
-| `PORT` | Server port | `9292` |
-| `DB_MAX_CONNECTIONS` | Database connection pool size | `10` |
-| `PING_BATCH_SIZE` | Worker: IPs per batch | `10` |
-| `PING_CHECK_INTERVAL` | Worker: seconds between checks | `60` |
-| `PING_POLL_INTERVAL` | Worker: poll interval when idle | `5` |
+```bash
+docker compose run --rm test
+```
 
-## Error Handling
+This will:
+- Create the test database (`ip_monitor_test`)
+- Run migrations
+- Execute all RSpec tests
+- Clean up after completion
 
-The API includes global error handlers for:
+Run specific test file:
 
-- Validation errors (400)
-- Not found errors (404)
-- Database validation errors (422)
-- Internal server errors (500)
-
-In development mode, detailed error information including backtraces is returned.
-
-## CORS
-
-CORS is enabled for all origins by default. Configure in [`config.ru`](config.ru:4) if needed.
+```bash
+docker compose run --rm test bundle exec rspec spec/requests/v1/ips_spec.rb
+```
 
 ## License
 
