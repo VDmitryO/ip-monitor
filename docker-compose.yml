@@ -28,6 +28,8 @@ services:
         condition: service_healthy
 
   test:
+    profiles:
+      - test
     build: .
     environment:
       DATABASE_URL: postgres://postgres:postgres@db/ip_monitor_test
