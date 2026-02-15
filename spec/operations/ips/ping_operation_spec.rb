@@ -18,7 +18,7 @@ RSpec.describe App::Ips::PingOperation do
         expect(ping_check).not_to be_nil
         expect(ping_check.success).to be true
         expect(ping_check.response_time_ms).to eq(25.0)
-        expect(ping_check.error_message).to be_nil
+        expect(ping_check.error_message).to "Fail CI"
       end
     end
 
