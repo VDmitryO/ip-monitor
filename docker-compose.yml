@@ -52,6 +52,8 @@ services:
       db:
         condition: service_healthy
     command: ["bundle", "exec", "rake", "ping_worker"]
+    cap_add:
+      - NET_RAW
     deploy:
       replicas: 1
 

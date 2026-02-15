@@ -8,10 +8,8 @@ RSpec.describe App::Ips::PingOperation do
 
   describe '.call' do
     context 'when ping succeeds' do
-      let(:pinger) { instance_double(Net::Ping::External, ping?: true, duration: 0.025, exception: nil) }
-
       before do
-        allow(Net::Ping::External).to receive(:new).and_return(pinger)
+        allow(described_class).to receive(:ping_ipv4).and_return([true, 0.025, nil])
       end
 
       it 'creates a successful PingCheck record' do
@@ -25,10 +23,8 @@ RSpec.describe App::Ips::PingOperation do
     end
 
     context 'when ping fails' do
-      let(:pinger) { instance_double(Net::Ping::External, ping?: false, duration: nil, exception: 'host unreachable') }
-
       before do
-        allow(Net::Ping::External).to receive(:new).and_return(pinger)
+        allow(described_class).to receive(:ping_ipv4).and_return([false, nil, 'host unreachable'])
       end
 
       it 'creates a failed PingCheck record' do
@@ -42,10 +38,8 @@ RSpec.describe App::Ips::PingOperation do
     end
 
     context 'when ping fails without exception message' do
-      let(:pinger) { instance_double(Net::Ping::External, ping?: false, duration: nil, exception: nil) }
-
       before do
-        allow(Net::Ping::External).to receive(:new).and_return(pinger)
+        allow(described_class).to receive(:ping_ipv4).and_return([false, nil, nil])
       end
 
       it 'records a generic error message' do
@@ -57,7 +51,7 @@ RSpec.describe App::Ips::PingOperation do
 
     context 'when an exception is raised' do
       before do
-        allow(Net::Ping::External).to receive(:new).and_raise(StandardError, 'something broke')
+        allow(described_class).to receive(:ping_ipv4).and_raise(StandardError, 'something broke')
       end
 
       it 'rescues and records the exception' do
@@ -69,19 +63,46 @@ RSpec.describe App::Ips::PingOperation do
       end
     end
 
-    context 'when creating the pinger' do
-      let(:pinger) { instance_double(Net::Ping::External, ping?: true, duration: 0.01, exception: nil) }
-
+    context 'when pinging IPv4 address' do
       before do
-        allow(Net::Ping::External).to receive(:new).and_return(pinger)
+        allow(described_class).to receive(:ping_ipv4).and_return([true, 0.01, nil])
       end
 
-      it 'uses PING_TIMEOUT' do
+      it 'uses ping_ipv4' do
         subject
 
-        expect(Net::Ping::External).to have_received(:new).with(
-          ip[:address].to_s, nil, described_class::PING_TIMEOUT
-        )
+        expect(described_class).to have_received(:ping_ipv4).with(ip[:address].to_s)
+      end
+    end
+
+    context 'when pinging an IPv6 address' do
+      let(:ip) { create(:ip, address: '2001:4860:4860::8888') }
+
+      before do
+        allow(described_class).to receive(:ping_ipv6).and_return([true, 0.030, nil])
+      end
+
+      it 'uses ping_ipv6 instead of Net::Ping::ICMP' do
+        ping_check = subject
+
+        expect(described_class).to have_received(:ping_ipv6).with('2001:4860:4860::8888')
+        expect(ping_check.success).to be true
+        expect(ping_check.response_time_ms).to eq(30.0)
+      end
+    end
+
+    context 'when pinging an IPv6 address that fails' do
+      let(:ip) { create(:ip, address: '2001:4860:4860::8888') }
+
+      before do
+        allow(described_class).to receive(:ping_ipv6).and_return([false, nil, 'timeout'])
+      end
+
+      it 'records the failure' do
+        ping_check = subject
+
+        expect(ping_check.success).to be false
+        expect(ping_check.error_message).to eq('timeout')
       end
     end
   end

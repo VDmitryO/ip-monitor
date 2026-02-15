@@ -1,4 +1,5 @@
 require 'net/ping'
+require 'ipaddr'
 require_relative '../../utils/logger'
 
 module App
@@ -12,11 +13,17 @@ module App
         address = ip[:address].to_s
         App::Logger.debug "Pinging address", address: address, ip_id: ip[:id]
 
-        pinger = Net::Ping::External.new(address, nil, PING_TIMEOUT)
+        if IPAddr.new(address).ipv6?
+          # TODO:
+          # My local router does not provide IPv6 connectivity, so only failure cases were tested.
+          # This logic should be tested in an IPv6-enabled environment.
+          success, duration, error = ping_ipv6(address)
+        else
+          success, duration, error = ping_ipv4(address)
+        end
 
-        success = pinger.ping?
-        response_time_ms = success && pinger.duration ? (pinger.duration * 1000).round(2) : nil
-        error_message = success ? nil : (pinger.exception || 'ping failed')
+        response_time_ms = success && duration ? (duration * 1000).round(2) : nil
+        error_message = success ? nil : (error || 'ping failed')
 
         App::Logger.info "Ping completed",
           address: address,
@@ -43,6 +50,29 @@ module App
           success: false,
           error_message: "Exception: #{e.message}"
         )
+      end
+
+      # IPv4 ping using Net::Ping::ICMP
+      def ping_ipv4(address)
+        pinger = Net::Ping::ICMP.new(address, nil, PING_TIMEOUT)
+        success = pinger.ping?
+        duration = pinger.duration
+        error = success ? nil : (pinger.exception || 'ping failed')
+        [success, duration, error]
+      end
+
+      # IPv6 ping using system ping6 command
+      def ping_ipv6(address)
+        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        success = system('ping6', '-c', '1', '-W', PING_TIMEOUT.to_s, address,
+                         out: File::NULL, err: File::NULL)
+        duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+
+        if success
+          [true, duration, nil]
+        else
+          [false, nil, 'ping failed']
+        end
       end
     end
   end
