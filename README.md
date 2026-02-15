@@ -30,6 +30,105 @@ That's it! The application will:
 
 The API will be available at `http://localhost:9292`
 
+## API
+
+All API endpoints are available at `http://localhost:9292/v1`
+
+### POST /ips
+
+Add a new IP address for monitoring.
+
+**Request Body:**
+```json
+{
+  "ip": "8.8.8.8",           // Required: IPv4 or IPv6 address
+  "enabled": true            // Optional: Enable stats collection (default: true)
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "address": "8.8.8.8",
+  "enabled": true,
+  "next_check_at": "2026-02-15T13:00:00Z",
+  "created_at": "2026-02-15T13:00:00Z",
+  "updated_at": "2026-02-15T13:00:00Z"
+}
+```
+
+### POST /ips/:id/enable
+
+Enable statistics collection for an IP address. The ping worker will start monitoring this IP.
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "address": "8.8.8.8",
+  "enabled": true,
+  "next_check_at": "2026-02-15T13:00:00Z",
+  "created_at": "2026-02-15T13:00:00Z",
+  "updated_at": "2026-02-15T13:00:00Z"
+}
+```
+
+### POST /ips/:id/disable
+
+Disable statistics collection for an IP address. The ping worker will stop monitoring this IP.
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "address": "8.8.8.8",
+  "enabled": false,
+  "next_check_at": "2026-02-15T13:00:00Z",
+  "created_at": "2026-02-15T13:00:00Z",
+  "updated_at": "2026-02-15T13:00:00Z"
+}
+```
+
+### GET /ips/:id/stats
+
+Get ping statistics for an IP address within a time range.
+
+**Query Parameters:**
+- `time_from` (required): Start of time range (ISO 8601 datetime)
+- `time_to` (required): End of time range (ISO 8601 datetime)
+
+**Example Request:**
+```
+GET /ips/1/stats?time_from=2026-02-15T12:00:00Z&time_to=2026-02-15T13:00:00Z
+```
+
+**Response (200 OK):**
+```json
+{
+  "avg_rtt": 25.43,          // Average round-trip time in milliseconds
+  "min_rtt": 18.20,          // Minimum RTT
+  "max_rtt": 45.67,          // Maximum RTT
+  "median_rtt": 24.10,       // Median RTT
+  "stddev_rtt": 5.32,        // Standard deviation of RTT
+  "packet_loss_pct": 2.50,   // Packet loss percentage
+  "total_checks": 60         // Total number of ping checks
+}
+```
+
+**Error Response (422 Unprocessable Entity):**
+```json
+{
+  "error": "No ping checks found for this IP in the given time range"
+}
+```
+
+### DELETE /ips/:id
+
+Delete an IP address and all its associated ping statistics.
+
+**Response:** 204 No Content
+
 ## Ping Worker
 
 The application includes a background worker that continuously monitors IP addresses by pinging them at regular intervals.
